@@ -13,6 +13,10 @@ export const availableTools: DrawingTool[] = [
     label: 'Select',
   },
   {
+    id: 'pan',
+    label: 'Pan',
+  },
+  {
     id: 'rectangle',
     label: 'Rectangle',
   },

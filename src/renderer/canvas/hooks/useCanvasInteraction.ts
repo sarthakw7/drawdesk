@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import type { ToolId } from '../../tools/drawingTools'
 import type { Point } from '../geometry/rectangles'
+import { screenToWorld, type Viewport } from '../viewport/coordinates'
 
 type ToolInteraction = {
   onPointerDown?: (point: Point) => void
@@ -11,6 +12,7 @@ type ToolInteraction = {
 
 type CanvasInteractions = {
   select: ToolInteraction
+  pan: ToolInteraction
   rectangle: ToolInteraction
   ellipse: ToolInteraction
   line: ToolInteraction
@@ -23,6 +25,7 @@ const getPointerPosition = (event: KonvaEventObject<PointerEvent>) => (
 
 export const useCanvasInteraction = (
   activeTool: ToolId,
+  viewport: Viewport,
   interactions: CanvasInteractions,
 ) => {
   const activeGestureTool = useRef<ToolId | null>(null)
@@ -31,6 +34,8 @@ export const useCanvasInteraction = (
     switch (tool) {
       case 'select':
         return interactions.select
+      case 'pan':
+        return interactions.pan
       case 'rectangle':
         return interactions.rectangle
       case 'ellipse':
@@ -44,6 +49,10 @@ export const useCanvasInteraction = (
     }
   }
 
+  const getInteractionPoint = (tool: ToolId, point: Point) => (
+    tool === 'pan' ? point : screenToWorld(point, viewport)
+  )
+
   const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
     const point = getPointerPosition(event)
 
@@ -52,7 +61,7 @@ export const useCanvasInteraction = (
     }
 
     activeGestureTool.current = activeTool
-    getInteraction(activeTool)?.onPointerDown?.(point)
+    getInteraction(activeTool)?.onPointerDown?.(getInteractionPoint(activeTool, point))
   }
 
   const handlePointerMove = (event: KonvaEventObject<PointerEvent>) => {
@@ -66,7 +75,9 @@ export const useCanvasInteraction = (
       return
     }
 
-    getInteraction(activeGestureTool.current)?.onPointerMove?.(point)
+    getInteraction(activeGestureTool.current)?.onPointerMove?.(
+      getInteractionPoint(activeGestureTool.current, point),
+    )
   }
 
   const handlePointerUp = () => {

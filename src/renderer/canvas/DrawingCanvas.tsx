@@ -10,11 +10,13 @@ import { LinesLayer } from './components/LinesLayer'
 import { RectanglesLayer } from './components/RectanglesLayer'
 import { TextInputOverlay } from './components/TextInputOverlay'
 import { TextsLayer } from './components/TextsLayer'
+import { getCanvasCursor } from './cursor'
 import { useCanvasInteraction } from './hooks/useCanvasInteraction'
 import { useEllipseDrawing } from './hooks/useEllipseDrawing'
 import { useLineDrawing } from './hooks/useLineDrawing'
 import { useRectangleDrawing } from './hooks/useRectangleDrawing'
 import { useTextDrawing } from './hooks/useTextDrawing'
+import { useViewport } from './viewport/useViewport'
 
 type DrawingCanvasProps = {
   document: DrawingDocument
@@ -33,10 +35,12 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
   const ellipseDrawing = useEllipseDrawing(dispatch)
   const lineDrawing = useLineDrawing(dispatch)
   const textDrawing = useTextDrawing(dispatch)
-  const stageHandlers = useCanvasInteraction(activeTool, {
+  const { viewport, isPanning, panInteraction } = useViewport()
+  const stageHandlers = useCanvasInteraction(activeTool, viewport, {
     select: {
       onPointerDown: () => setSelectedShapeId(null),
     },
+    pan: panInteraction,
     rectangle: rectangleDrawing.interaction,
     ellipse: ellipseDrawing.interaction,
     line: lineDrawing.interaction,
@@ -94,6 +98,7 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
       })
     },
   }
+  const cursor = getCanvasCursor(activeTool, isPanning)
 
   return (
     <div
@@ -101,6 +106,7 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
         position: 'relative',
         width: stageSize.width,
         height: stageSize.height,
+        cursor,
       }}
     >
       <Stage
@@ -108,7 +114,12 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
         height={stageSize.height}
         {...stageHandlers}
       >
-        <Layer>
+        <Layer
+          x={viewport.x}
+          y={viewport.y}
+          scaleX={viewport.zoom}
+          scaleY={viewport.zoom}
+        >
           <RectanglesLayer
             rectangles={rectangles}
             previewRectangle={rectangleDrawing.previewRectangle}
@@ -133,6 +144,7 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
       </Stage>
       <TextInputOverlay
         draftText={textDrawing.draftText}
+        viewport={viewport}
         onChange={textDrawing.updateDraftText}
         onCommit={textDrawing.commitDraftText}
         onCancel={textDrawing.cancelDraftText}

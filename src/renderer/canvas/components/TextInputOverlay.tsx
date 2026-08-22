@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react'
 import type { DraftText } from '../hooks/useTextDrawing'
+import type { Viewport } from '../viewport/coordinates'
+import { worldToScreen } from '../viewport/coordinates'
 
 type TextInputOverlayProps = {
   draftText: DraftText | null
+  viewport: Viewport
   onChange: (text: string) => void
   onCommit: () => void
   onCancel: () => void
@@ -10,6 +13,7 @@ type TextInputOverlayProps = {
 
 export function TextInputOverlay({
   draftText,
+  viewport,
   onChange,
   onCommit,
   onCancel,
@@ -24,12 +28,13 @@ export function TextInputOverlay({
     return null
   }
 
+  const screenPosition = worldToScreen(draftText, viewport)
+
   return (
     <input
       ref={inputRef}
       value={draftText.text}
       onChange={(event) => onChange(event.target.value)}
-      
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           event.preventDefault()
@@ -43,8 +48,8 @@ export function TextInputOverlay({
       }}
       style={{
         position: 'absolute',
-        left: draftText.x,
-        top: draftText.y,
+        left: screenPosition.x,
+        top: screenPosition.y,
         boxSizing: 'border-box',
         minWidth: 120,
         padding: '2px 4px',
