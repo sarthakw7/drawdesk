@@ -12,6 +12,7 @@ export function Toolbar({ activeTool, onSelectTool }: ToolbarProps) {
       aria-label="Drawing tools"
       style={{
         display: 'flex',
+        flexShrink: 0,
         gap: 8,
         padding: 8,
       }}

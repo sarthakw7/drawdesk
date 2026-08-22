@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { Point } from '../geometry/rectangles'
-import { initialViewport, type Viewport } from './coordinates'
+import { initialViewport, type Viewport, zoomViewportAtPoint } from './coordinates'
 
 type PanGesture = {
   startPoint: Point
@@ -39,9 +39,14 @@ export const useViewport = () => {
     setIsPanning(false)
   }
 
+  const zoomAtPoint = (point: Point, wheelDeltaY: number) => {
+    setViewport((currentViewport) => zoomViewportAtPoint(currentViewport, point, wheelDeltaY))
+  }
+
   return {
     viewport,
     isPanning,
+    zoomAtPoint,
     panInteraction: {
       onPointerDown: startPan,
       onPointerMove: updatePan,

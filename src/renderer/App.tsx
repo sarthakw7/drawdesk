@@ -9,12 +9,17 @@ export function App() {
   const [document, dispatch] = useReducer(drawingReducer, undefined, createEmptyDrawing)
   const [activeTool, setActiveTool] = useState<ToolId>(defaultTool)
 
-  console.log('document shapes:', document.shapes)
-
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: 0,
+      }}
+    >
       <Toolbar activeTool={activeTool} onSelectTool={setActiveTool} />
       <DrawingCanvas document={document} dispatch={dispatch} activeTool={activeTool} />
-    </>
+    </div>
   )
 }
