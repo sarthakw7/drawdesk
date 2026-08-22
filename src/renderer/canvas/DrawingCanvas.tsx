@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { Layer, Stage } from 'react-konva'
 import type { DrawingDocument } from '../../domain/drawing'
@@ -29,7 +29,11 @@ type DrawingCanvasProps = {
 
 const zoomButtonDelta = 200
 
-export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasProps) {
+export function DrawingCanvas({
+  document,
+  dispatch,
+  activeTool,
+}: DrawingCanvasProps) {
   const { elementRef, size } = useElementSize()
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
   const rectangleDrawing = useRectangleDrawing(dispatch)
@@ -37,6 +41,13 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
   const lineDrawing = useLineDrawing(dispatch)
   const textDrawing = useTextDrawing(dispatch)
   const { viewport, isPanning, zoomAtPoint, panInteraction } = useViewport()
+
+  useEffect(() => {
+    if (selectedShapeId && !document.shapes.some((shape) => shape.id === selectedShapeId)) {
+      setSelectedShapeId(null)
+    }
+  }, [document.shapes, selectedShapeId])
+
   const stageHandlers = useCanvasInteraction(activeTool, viewport, {
     select: {
       onPointerDown: () => setSelectedShapeId(null),
