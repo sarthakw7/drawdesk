@@ -9,6 +9,8 @@ export function App() {
   const [document, dispatch] = useReducer(drawingReducer, undefined, createEmptyDrawing)
   const [activeTool, setActiveTool] = useState<ToolId>(defaultTool)
 
+  console.log('document shapes:', document.shapes)
+
   return (
     <>
       <Toolbar activeTool={activeTool} onSelectTool={setActiveTool} />

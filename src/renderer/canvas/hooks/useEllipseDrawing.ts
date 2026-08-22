@@ -1,42 +1,43 @@
 import { useState } from 'react'
 import type { DrawingAction } from '../../../state/drawingReducer'
-import type { DraftRectangle, Point } from '../geometry/rectangles'
-import { normalizeRectangle } from '../geometry/rectangles'
+import type { Point } from '../geometry/rectangles'
+import type { DraftEllipse } from '../geometry/ellipses'
+import { normalizeEllipse } from '../geometry/ellipses'
 import { createShapeId } from '../shapeIds'
 
 type DispatchDrawingAction = (action: DrawingAction) => void
 
-export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
-  const [draftRectangle, setDraftRectangle] = useState<DraftRectangle | null>(null)
+export const useEllipseDrawing = (dispatch: DispatchDrawingAction) => {
+  const [draftEllipse, setDraftEllipse] = useState<DraftEllipse | null>(null)
 
   const handlePointerDown = (point: Point) => {
-    setDraftRectangle({
+    setDraftEllipse({
       start: point,
       end: point,
     })
   }
 
   const handlePointerMove = (point: Point) => {
-    if (!draftRectangle) {
+    if (!draftEllipse) {
       return
     }
 
-    setDraftRectangle({
-      ...draftRectangle,
+    setDraftEllipse({
+      ...draftEllipse,
       end: point,
     })
   }
 
   const handlePointerUp = () => {
-    if (!draftRectangle) {
+    if (!draftEllipse) {
       return
     }
 
-    const rectangle = normalizeRectangle(draftRectangle)
+    const ellipse = normalizeEllipse(draftEllipse)
 
-    setDraftRectangle(null)
+    setDraftEllipse(null)
 
-    if (rectangle.width === 0 || rectangle.height === 0) {
+    if (ellipse.width === 0 || ellipse.height === 0) {
       return
     }
 
@@ -44,14 +45,14 @@ export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
       type: 'add-shape',
       shape: {
         id: createShapeId(),
-        type: 'rectangle',
-        ...rectangle,
+        type: 'ellipse',
+        ...ellipse,
       },
     })
   }
 
   return {
-    previewRectangle: draftRectangle ? normalizeRectangle(draftRectangle) : null,
+    previewEllipse: draftEllipse ? normalizeEllipse(draftEllipse) : null,
     interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,

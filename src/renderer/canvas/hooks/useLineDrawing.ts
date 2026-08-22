@@ -1,42 +1,43 @@
 import { useState } from 'react'
 import type { DrawingAction } from '../../../state/drawingReducer'
-import type { DraftRectangle, Point } from '../geometry/rectangles'
-import { normalizeRectangle } from '../geometry/rectangles'
+import type { Point } from '../geometry/rectangles'
+import type { DraftLine } from '../geometry/lines'
+import { createLineGeometry } from '../geometry/lines'
 import { createShapeId } from '../shapeIds'
 
 type DispatchDrawingAction = (action: DrawingAction) => void
 
-export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
-  const [draftRectangle, setDraftRectangle] = useState<DraftRectangle | null>(null)
+export const useLineDrawing = (dispatch: DispatchDrawingAction) => {
+  const [draftLine, setDraftLine] = useState<DraftLine | null>(null)
 
   const handlePointerDown = (point: Point) => {
-    setDraftRectangle({
+    setDraftLine({
       start: point,
       end: point,
     })
   }
 
   const handlePointerMove = (point: Point) => {
-    if (!draftRectangle) {
+    if (!draftLine) {
       return
     }
 
-    setDraftRectangle({
-      ...draftRectangle,
+    setDraftLine({
+      ...draftLine,
       end: point,
     })
   }
 
   const handlePointerUp = () => {
-    if (!draftRectangle) {
+    if (!draftLine) {
       return
     }
 
-    const rectangle = normalizeRectangle(draftRectangle)
+    const line = createLineGeometry(draftLine)
 
-    setDraftRectangle(null)
+    setDraftLine(null)
 
-    if (rectangle.width === 0 || rectangle.height === 0) {
+    if (line.startX === line.endX && line.startY === line.endY) {
       return
     }
 
@@ -44,14 +45,14 @@ export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
       type: 'add-shape',
       shape: {
         id: createShapeId(),
-        type: 'rectangle',
-        ...rectangle,
+        type: 'line',
+        ...line,
       },
     })
   }
 
   return {
-    previewRectangle: draftRectangle ? normalizeRectangle(draftRectangle) : null,
+    previewLine: draftLine ? createLineGeometry(draftLine) : null,
     interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,

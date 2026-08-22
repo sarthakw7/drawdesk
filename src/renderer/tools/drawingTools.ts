@@ -12,4 +12,16 @@ export const availableTools: DrawingTool[] = [
     id: 'rectangle',
     label: 'Rectangle',
   },
+  {
+    id: 'ellipse',
+    label: 'Ellipse',
+  },
+  {
+    id: 'line',
+    label: 'Line',
+  },
+  {
+    id: 'text',
+    label: 'Text',
+  },
 ]

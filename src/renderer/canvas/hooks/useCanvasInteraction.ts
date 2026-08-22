@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import type { ToolId } from '../../tools/drawingTools'
 import type { Point } from '../geometry/rectangles'
@@ -10,6 +11,9 @@ type ToolInteraction = {
 
 type CanvasInteractions = {
   rectangle: ToolInteraction
+  ellipse: ToolInteraction
+  line: ToolInteraction
+  text: ToolInteraction
 }
 
 const getPointerPosition = (event: KonvaEventObject<PointerEvent>) => (
@@ -20,10 +24,18 @@ export const useCanvasInteraction = (
   activeTool: ToolId,
   interactions: CanvasInteractions,
 ) => {
-  const getActiveInteraction = (): ToolInteraction | null => {
-    switch (activeTool) {
+  const activeGestureTool = useRef<ToolId | null>(null)
+
+  const getInteraction = (tool: ToolId): ToolInteraction | null => {
+    switch (tool) {
       case 'rectangle':
         return interactions.rectangle
+      case 'ellipse':
+        return interactions.ellipse
+      case 'line':
+        return interactions.line
+      case 'text':
+        return interactions.text
       default:
         return null
     }
@@ -36,7 +48,8 @@ export const useCanvasInteraction = (
       return
     }
 
-    getActiveInteraction()?.onPointerDown?.(point)
+    activeGestureTool.current = activeTool
+    getInteraction(activeTool)?.onPointerDown?.(point)
   }
 
   const handlePointerMove = (event: KonvaEventObject<PointerEvent>) => {
@@ -46,11 +59,19 @@ export const useCanvasInteraction = (
       return
     }
 
-    getActiveInteraction()?.onPointerMove?.(point)
+    if (!activeGestureTool.current) {
+      return
+    }
+
+    getInteraction(activeGestureTool.current)?.onPointerMove?.(point)
   }
 
   const handlePointerUp = () => {
-    getActiveInteraction()?.onPointerUp?.()
+    if (activeGestureTool.current) {
+      getInteraction(activeGestureTool.current)?.onPointerUp?.()
+    }
+
+    activeGestureTool.current = null
   }
 
   return {
