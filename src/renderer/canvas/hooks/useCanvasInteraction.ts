@@ -10,6 +10,7 @@ type ToolInteraction = {
 }
 
 type CanvasInteractions = {
+  select: ToolInteraction
   rectangle: ToolInteraction
   ellipse: ToolInteraction
   line: ToolInteraction
@@ -28,6 +29,8 @@ export const useCanvasInteraction = (
 
   const getInteraction = (tool: ToolId): ToolInteraction | null => {
     switch (tool) {
+      case 'select':
+        return interactions.select
       case 'rectangle':
         return interactions.rectangle
       case 'ellipse':

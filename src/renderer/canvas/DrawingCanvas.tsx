@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Layer, Stage } from 'react-konva'
 import type { DrawingDocument } from '../../domain/drawing'
 import type { EllipseShape, LineShape, RectangleShape, TextShape } from '../../domain/shapes'
 import type { DrawingAction } from '../../state/drawingReducer'
 import type { ToolId } from '../tools/drawingTools'
+import type { ShapeSelection } from './selection'
 import { EllipsesLayer } from './components/EllipsesLayer'
 import { LinesLayer } from './components/LinesLayer'
 import { RectanglesLayer } from './components/RectanglesLayer'
@@ -26,11 +28,15 @@ const stageSize = {
 }
 
 export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasProps) {
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
   const rectangleDrawing = useRectangleDrawing(dispatch)
   const ellipseDrawing = useEllipseDrawing(dispatch)
   const lineDrawing = useLineDrawing(dispatch)
   const textDrawing = useTextDrawing(dispatch)
   const stageHandlers = useCanvasInteraction(activeTool, {
+    select: {
+      onPointerDown: () => setSelectedShapeId(null),
+    },
     rectangle: rectangleDrawing.interaction,
     ellipse: ellipseDrawing.interaction,
     line: lineDrawing.interaction,
@@ -49,6 +55,45 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
   const texts = document.shapes.filter((shape): shape is TextShape => (
     shape.type === 'text'
   ))
+  const selection: ShapeSelection = {
+    selectedShapeId,
+    selectShape: setSelectedShapeId,
+    clearSelection: () => setSelectedShapeId(null),
+    canInteractWithShape: (shapeId) => activeTool === 'select' && selectedShapeId === shapeId,
+    moveRectangle: (shapeId, x, y) => {
+      dispatch({
+        type: 'update-shape',
+        id: shapeId,
+        shapeType: 'rectangle',
+        updates: {
+          x,
+          y,
+        },
+      })
+    },
+    moveEllipse: (shapeId, x, y) => {
+      dispatch({
+        type: 'update-shape',
+        id: shapeId,
+        shapeType: 'ellipse',
+        updates: {
+          x,
+          y,
+        },
+      })
+    },
+    moveText: (shapeId, x, y) => {
+      dispatch({
+        type: 'update-shape',
+        id: shapeId,
+        shapeType: 'text',
+        updates: {
+          x,
+          y,
+        },
+      })
+    },
+  }
 
   return (
     <div
@@ -67,16 +112,23 @@ export function DrawingCanvas({ document, dispatch, activeTool }: DrawingCanvasP
           <RectanglesLayer
             rectangles={rectangles}
             previewRectangle={rectangleDrawing.previewRectangle}
+            activeTool={activeTool}
+            selection={selection}
           />
           <EllipsesLayer
             ellipses={ellipses}
             previewEllipse={ellipseDrawing.previewEllipse}
+            activeTool={activeTool}
+            selection={selection}
           />
           <LinesLayer
             lines={lines}
             previewLine={lineDrawing.previewLine}
+            activeTool={activeTool}
+            selection={selection}
+            dispatch={dispatch}
           />
-          <TextsLayer texts={texts} />
+          <TextsLayer texts={texts} activeTool={activeTool} selection={selection} />
         </Layer>
       </Stage>
       <TextInputOverlay

@@ -9,6 +9,10 @@ export const defaultTool: ToolId = 'rectangle'
 
 export const availableTools: DrawingTool[] = [
   {
+    id: 'select',
+    label: 'Select',
+  },
+  {
     id: 'rectangle',
     label: 'Rectangle',
   },
