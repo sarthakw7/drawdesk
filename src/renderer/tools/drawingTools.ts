@@ -1,0 +1,15 @@
+export type ToolId = 'select' | 'rectangle' | 'ellipse' | 'line' | 'text' | 'pan'
+
+export type DrawingTool = {
+  id: ToolId
+  label: string
+}
+
+export const defaultTool: ToolId = 'rectangle'
+
+export const availableTools: DrawingTool[] = [
+  {
+    id: 'rectangle',
+    label: 'Rectangle',
+  },
+]

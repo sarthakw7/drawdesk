@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import type { KonvaEventObject } from 'konva/lib/Node'
 import type { DrawingAction } from '../../../state/drawingReducer'
-import type { DraftRectangle } from '../geometry/rectangles'
+import type { DraftRectangle, Point } from '../geometry/rectangles'
 import { normalizeRectangle } from '../geometry/rectangles'
 
 type DispatchDrawingAction = (action: DrawingAction) => void
@@ -17,23 +16,15 @@ const createShapeId = () => {
 export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
   const [draftRectangle, setDraftRectangle] = useState<DraftRectangle | null>(null)
 
-  const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
-    const point = event.target.getStage()?.getPointerPosition()
-
-    if (!point) {
-      return
-    }
-
+  const handlePointerDown = (point: Point) => {
     setDraftRectangle({
       start: point,
       end: point,
     })
   }
 
-  const handlePointerMove = (event: KonvaEventObject<PointerEvent>) => {
-    const point = event.target.getStage()?.getPointerPosition()
-
-    if (!point || !draftRectangle) {
+  const handlePointerMove = (point: Point) => {
+    if (!draftRectangle) {
       return
     }
 
@@ -68,7 +59,7 @@ export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
 
   return {
     previewRectangle: draftRectangle ? normalizeRectangle(draftRectangle) : null,
-    stageHandlers: {
+    interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
