@@ -47,7 +47,10 @@ export const useTextDrawing = (dispatch: DispatchDrawingAction) => {
       return
     }
 
-    
+    if (draft.text.trim() === '') {
+      cancelDraftText()
+      return
+    }
 
     dispatch({
       type: 'add-shape',

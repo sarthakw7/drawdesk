@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import type { ToolId } from '../../tools/drawingTools'
 import type { Point } from '../geometry/rectangles'
@@ -27,8 +27,13 @@ export const useCanvasInteraction = (
   activeTool: ToolId,
   viewport: Viewport,
   interactions: CanvasInteractions,
+  documentReplacementKey: number,
 ) => {
   const activeGestureTool = useRef<ToolId | null>(null)
+
+  useEffect(() => {
+    activeGestureTool.current = null
+  }, [documentReplacementKey])
 
   const getInteraction = (tool: ToolId): ToolInteraction | null => {
     switch (tool) {

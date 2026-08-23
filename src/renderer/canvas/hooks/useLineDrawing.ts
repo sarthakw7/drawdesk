@@ -53,6 +53,7 @@ export const useLineDrawing = (dispatch: DispatchDrawingAction) => {
 
   return {
     previewLine: draftLine ? createLineGeometry(draftLine) : null,
+    cancelDraft: () => setDraftLine(null),
     interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,

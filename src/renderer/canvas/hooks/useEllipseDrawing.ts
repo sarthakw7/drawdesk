@@ -53,6 +53,7 @@ export const useEllipseDrawing = (dispatch: DispatchDrawingAction) => {
 
   return {
     previewEllipse: draftEllipse ? normalizeEllipse(draftEllipse) : null,
+    cancelDraft: () => setDraftEllipse(null),
     interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,

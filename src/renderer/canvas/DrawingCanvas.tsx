@@ -25,6 +25,7 @@ type DrawingCanvasProps = {
   document: DrawingDocument
   dispatch: (action: DrawingAction) => void
   activeTool: ToolId
+  documentReplacementKey: number
 }
 
 const zoomButtonDelta = 200
@@ -33,6 +34,7 @@ export function DrawingCanvas({
   document,
   dispatch,
   activeTool,
+  documentReplacementKey,
 }: DrawingCanvasProps) {
   const { elementRef, size } = useElementSize()
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
@@ -48,6 +50,14 @@ export function DrawingCanvas({
     }
   }, [document.shapes, selectedShapeId])
 
+  useEffect(() => {
+    setSelectedShapeId(null)
+    rectangleDrawing.cancelDraft()
+    ellipseDrawing.cancelDraft()
+    lineDrawing.cancelDraft()
+    textDrawing.cancelDraftText()
+  }, [documentReplacementKey])
+
   const stageHandlers = useCanvasInteraction(activeTool, viewport, {
     select: {
       onPointerDown: () => setSelectedShapeId(null),
@@ -57,7 +67,7 @@ export function DrawingCanvas({
     ellipse: ellipseDrawing.interaction,
     line: lineDrawing.interaction,
     text: textDrawing.interaction,
-  })
+  }, documentReplacementKey)
 
   const rectangles = document.shapes.filter((shape): shape is RectangleShape => (
     shape.type === 'rectangle'
@@ -74,7 +84,6 @@ export function DrawingCanvas({
   const selection: ShapeSelection = {
     selectedShapeId,
     selectShape: setSelectedShapeId,
-    clearSelection: () => setSelectedShapeId(null),
     canInteractWithShape: (shapeId) => activeTool === 'select' && selectedShapeId === shapeId,
     moveRectangle: (shapeId, x, y) => {
       dispatch({

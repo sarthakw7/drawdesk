@@ -52,6 +52,7 @@ export const useRectangleDrawing = (dispatch: DispatchDrawingAction) => {
 
   return {
     previewRectangle: draftRectangle ? normalizeRectangle(draftRectangle) : null,
+    cancelDraft: () => setDraftRectangle(null),
     interaction: {
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,

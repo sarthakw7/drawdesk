@@ -12,6 +12,7 @@ export function App() {
   const [document, dispatch] = useReducer(drawingReducer, undefined, createEmptyDrawing)
   const [activeTool, setActiveTool] = useState<ToolId>(defaultTool)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [documentReplacementKey, setDocumentReplacementKey] = useState(0)
 
   useEffect(() => {
     if (saveStatus !== 'saved') {
@@ -33,6 +34,7 @@ export function App() {
       type: 'replace-document',
       document: createEmptyDrawing(),
     })
+    setDocumentReplacementKey((currentKey) => currentKey + 1)
   }
 
   const handleOpenDrawing = async () => {
@@ -52,6 +54,7 @@ export function App() {
       type: 'replace-document',
       document: result.document,
     })
+    setDocumentReplacementKey((currentKey) => currentKey + 1)
   }
 
   const handleSaveDrawing = async () => {
@@ -99,6 +102,7 @@ export function App() {
         document={document}
         dispatch={dispatch}
         activeTool={activeTool}
+        documentReplacementKey={documentReplacementKey}
       />
     </div>
   )
