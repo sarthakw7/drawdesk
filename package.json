@@ -1,7 +1,7 @@
 {
   "name": "drawdesk",
   "version": "1.0.0",
-  "description": "",
+  "description": "A lightweight desktop 2D drawing application.",
   "license": "ISC",
   "author": "",
   "type": "commonjs",
@@ -11,13 +11,36 @@
     "start": "npm run build && electron .",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --environment node"
+    "test": "vitest run --environment node",
+    "package:mac": "npm run build && electron-builder --mac dmg --arm64"
+  },
+  "build": {
+    "appId": "com.drawdesk.app",
+    "productName": "Drawdesk",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "dist/renderer/**"
+    ],
+    "mac": {
+      "icon": "build/icon.png",
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.graphics-design"
+    }
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "vitest": "^4.1.11"
