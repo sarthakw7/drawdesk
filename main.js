@@ -18,7 +18,8 @@ const registerDrawingFileHandlers = () => {
       await fs.writeFile(currentDrawingFilePath, `${JSON.stringify(document, null, 2)}\n`, 'utf8')
 
       return {
-        status: 'saved'
+        status: 'saved',
+        fileName: path.basename(currentDrawingFilePath)
       }
     }
 
@@ -37,7 +38,8 @@ const registerDrawingFileHandlers = () => {
     currentDrawingFilePath = result.filePath
 
     return {
-      status: 'saved'
+      status: 'saved',
+      fileName: path.basename(currentDrawingFilePath)
     }
   })
 
@@ -66,6 +68,7 @@ const registerDrawingFileHandlers = () => {
       return {
         status: 'opened',
         pendingOpenId: pendingOpen.id,
+        fileName: path.basename(pendingOpen.filePath),
         document
       }
     } catch {
@@ -87,7 +90,8 @@ const registerDrawingFileHandlers = () => {
     pendingOpen = null
 
     return {
-      status: 'confirmed'
+      status: 'confirmed',
+      fileName: path.basename(currentDrawingFilePath)
     }
   })
 
@@ -96,7 +100,8 @@ const registerDrawingFileHandlers = () => {
     pendingOpen = null
 
     return {
-      status: 'cleared'
+      status: 'cleared',
+      fileName: 'Untitled'
     }
   })
 }

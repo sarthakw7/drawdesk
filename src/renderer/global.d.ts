@@ -5,6 +5,7 @@ import type { DrawingDocument } from '../domain/drawing'
 type SaveDrawingResult =
   | {
       status: 'saved'
+      fileName: string
     }
   | {
       status: 'cancelled'
@@ -14,6 +15,7 @@ type OpenDrawingResult =
   | {
       status: 'opened'
       pendingOpenId: string
+      fileName: string
       document: unknown
     }
   | {
@@ -26,11 +28,13 @@ type OpenDrawingResult =
 
 type ClearCurrentDrawingResult = {
   status: 'cleared'
+  fileName: string
 }
 
 type ConfirmOpenDrawingResult =
   | {
       status: 'confirmed'
+      fileName: string
     }
   | {
       status: 'ignored'
