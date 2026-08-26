@@ -24,6 +24,26 @@ export function TextInputOverlay({
     inputRef.current?.focus()
   }, [draftText])
 
+  useEffect(() => {
+    if (!draftText) {
+      return
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && inputRef.current?.contains(event.target)) {
+        return
+      }
+
+      onCommit()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown, true)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown, true)
+    }
+  }, [draftText, onCommit])
+
   if (!draftText) {
     return null
   }

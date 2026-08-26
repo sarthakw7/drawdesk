@@ -25,6 +25,7 @@ type DrawingCanvasProps = {
   document: DrawingDocument
   dispatch: (action: DrawingAction) => void
   activeTool: ToolId
+  onSelectTool: (tool: ToolId) => void
   documentReplacementKey: number
 }
 
@@ -34,6 +35,7 @@ export function DrawingCanvas({
   document,
   dispatch,
   activeTool,
+  onSelectTool,
   documentReplacementKey,
 }: DrawingCanvasProps) {
   const { elementRef, size } = useElementSize()
@@ -49,6 +51,12 @@ export function DrawingCanvas({
       setSelectedShapeId(null)
     }
   }, [document.shapes, selectedShapeId])
+
+  useEffect(() => {
+    if (activeTool !== 'select') {
+      setSelectedShapeId(null)
+    }
+  }, [activeTool])
 
   useEffect(() => {
     setSelectedShapeId(null)
