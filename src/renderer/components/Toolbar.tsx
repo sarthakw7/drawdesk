@@ -1,8 +1,7 @@
-import { availableTools, type ToolId } from '../tools/drawingTools'
+import { Check, FilePlus, FolderOpen, Save } from 'lucide-react'
 
 type ToolbarProps = {
-  activeTool: ToolId
-  onSelectTool: (tool: ToolId) => void
+  fileDisplayName: string
   onNewDrawing: () => void
   onOpenDrawing: () => void
   onSaveDrawing: () => void
@@ -10,97 +9,107 @@ type ToolbarProps = {
 }
 
 export function Toolbar({
-  activeTool,
-  onSelectTool,
+  fileDisplayName,
   onNewDrawing,
   onOpenDrawing,
   onSaveDrawing,
   saveStatusText,
 }: ToolbarProps) {
+  const buttonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    height: 34,
+    padding: '0 12px',
+    borderRadius: 4,
+    border: '1px solid #d1d5db',
+    background: '#fff',
+    color: '#1f2937',
+    cursor: 'pointer',
+  }
+  const iconProps = {
+    size: 16,
+    strokeWidth: 2,
+  }
+  const isSaved = saveStatusText === 'Saved'
+  const isSaving = saveStatusText === 'Saving...'
+  const isError = saveStatusText === 'Save failed'
+
   return (
     <div
       role="toolbar"
-      aria-label="Drawing tools"
+      aria-label="Application"
       style={{
         display: 'flex',
         flexShrink: 0,
+        alignItems: 'center',
         gap: 8,
         padding: 8,
+        borderBottom: '1px solid #e5e7eb',
+        background: '#ffffff',
       }}
     >
+      <strong
+        style={{
+          marginRight: 8,
+          fontSize: 16,
+          fontWeight: 700,
+        }}
+      >
+        DrawDesk
+      </strong>
+      <span
+        style={{
+          marginRight: 8,
+          color: '#6b7280',
+          fontSize: 13,
+        }}
+      >
+        {fileDisplayName}
+      </span>
       <button
         type="button"
         onClick={onNewDrawing}
-        style={{
-          padding: '8px 12px',
-          borderRadius: 6,
-          border: '1px solid #ccc',
-          background: '#fff',
-          cursor: 'pointer',
-        }}
+        style={buttonStyle}
       >
+        <FilePlus {...iconProps} aria-hidden="true" />
         New
       </button>
       <button
         type="button"
         onClick={onOpenDrawing}
-        style={{
-          padding: '8px 12px',
-          borderRadius: 6,
-          border: '1px solid #ccc',
-          background: '#fff',
-          cursor: 'pointer',
-        }}
+        style={buttonStyle}
       >
+        <FolderOpen {...iconProps} aria-hidden="true" />
         Open
       </button>
       <button
         type="button"
         onClick={onSaveDrawing}
-        style={{
-          padding: '8px 12px',
-          borderRadius: 6,
-          border: '1px solid #ccc',
-          background: '#fff',
-          cursor: 'pointer',
-        }}
+        style={buttonStyle}
       >
+        <Save {...iconProps} aria-hidden="true" />
         Save
       </button>
-      {saveStatusText ? (
-        <span
-          aria-live="polite"
-          style={{
-            alignSelf: 'center',
-            color: saveStatusText === 'Save failed' ? '#b91c1c' : '#374151',
-            minWidth: 76,
-          }}
-        >
-          {saveStatusText}
-        </span>
-      ) : null}
-      {availableTools.map((tool) => {
-        const isActive = activeTool === tool.id
-
-        return (
-          <button
-            key={tool.id}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => onSelectTool(tool.id)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: isActive ? '2px solid #2c9' : '1px solid #ccc',
-              background: isActive ? '#efe' : '#fff',
-              fontWeight: isActive ? 600 : 400,
-              cursor: 'pointer',
-            }}
-          >
-            {tool.label}
-          </button>
-        )
-      })}
+      <div style={{ flex: 1 }} />
+      <span
+        aria-live="polite"
+        style={{
+          alignSelf: 'center',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 6,
+          color: isError ? '#b91c1c' : isSaved ? '#07885f' : '#6b7280',
+          minWidth: 104,
+          fontSize: isSaving ? 12 : 13,
+        }}
+      >
+        {isSaved ? (
+          <Check {...iconProps} aria-hidden="true" />
+        ) : null}
+        {saveStatusText}
+      </span>
     </div>
   )
 }

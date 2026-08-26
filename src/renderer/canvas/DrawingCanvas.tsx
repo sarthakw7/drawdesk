@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { KonvaEventObject } from 'konva/lib/Node'
 import { Layer, Stage } from 'react-konva'
 import type { DrawingDocument } from '../../domain/drawing'
@@ -11,6 +11,7 @@ import { LinesLayer } from './components/LinesLayer'
 import { RectanglesLayer } from './components/RectanglesLayer'
 import { TextInputOverlay } from './components/TextInputOverlay'
 import { TextsLayer } from './components/TextsLayer'
+import { ToolPalette } from './components/ToolPalette'
 import { ZoomControls } from './components/ZoomControls'
 import { getCanvasCursor } from './cursor'
 import { useCanvasInteraction } from './hooks/useCanvasInteraction'
@@ -19,6 +20,7 @@ import { useElementSize } from './hooks/useElementSize'
 import { useLineDrawing } from './hooks/useLineDrawing'
 import { useRectangleDrawing } from './hooks/useRectangleDrawing'
 import { useTextDrawing } from './hooks/useTextDrawing'
+import { screenToWorld } from './viewport/coordinates'
 import { useViewport } from './viewport/useViewport'
 
 type DrawingCanvasProps = {
@@ -29,22 +31,44 @@ type DrawingCanvasProps = {
   documentReplacementKey: number
 }
 
+export type DrawingCanvasHandle = {
+  takePendingTextAction: () => DrawingAction | null
+  startTextDraftAtPointer: () => boolean
+}
+
 const zoomButtonDelta = 200
 
-export function DrawingCanvas({
+export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>(function DrawingCanvas({
   document,
   dispatch,
   activeTool,
   onSelectTool,
   documentReplacementKey,
-}: DrawingCanvasProps) {
+}: DrawingCanvasProps, ref) {
   const { elementRef, size } = useElementSize()
+  const latestScreenPointerRef = useRef<{ x: number, y: number } | null>(null)
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null)
   const rectangleDrawing = useRectangleDrawing(dispatch)
   const ellipseDrawing = useEllipseDrawing(dispatch)
   const lineDrawing = useLineDrawing(dispatch)
   const textDrawing = useTextDrawing(dispatch)
   const { viewport, isPanning, zoomAtPoint, panInteraction } = useViewport()
+
+  useImperativeHandle(ref, () => ({
+    takePendingTextAction: textDrawing.takeDraftTextAction,
+    startTextDraftAtPointer: () => {
+      const point = latestScreenPointerRef.current
+        ? screenToWorld(latestScreenPointerRef.current, viewport)
+        : null
+
+      if (!point || textDrawing.draftText) {
+        return false
+      }
+
+      textDrawing.startDraftText(point)
+      return true
+    },
+  }), [textDrawing, viewport])
 
   useEffect(() => {
     if (selectedShapeId && !document.shapes.some((shape) => shape.id === selectedShapeId)) {
@@ -142,6 +166,18 @@ export function DrawingCanvas({
     }
 
     zoomAtPoint(point, event.evt.deltaY)
+    latestScreenPointerRef.current = point
+  }
+  const updateLatestPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+
+    latestScreenPointerRef.current = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    }
+  }
+  const clearLatestPointer = () => {
+    latestScreenPointerRef.current = null
   }
 
   return (
@@ -152,15 +188,20 @@ export function DrawingCanvas({
         flex: '1 1 0',
         minHeight: 0,
         width: '100%',
+        overflow: 'hidden',
+        background: '#FFF4D6',
         cursor,
       }}
+      onPointerEnter={updateLatestPointer}
+      onPointerLeave={clearLatestPointer}
+      onPointerMove={updateLatestPointer}
     >
       {size.width > 0 && size.height > 0 ? (
         <Stage
           width={size.width}
           height={size.height}
-          onWheel={handleWheel}
           {...stageHandlers}
+          onWheel={handleWheel}
         >
           <Layer
             x={viewport.x}
@@ -194,10 +235,12 @@ export function DrawingCanvas({
       <TextInputOverlay
         draftText={textDrawing.draftText}
         viewport={viewport}
+        canvasWidth={size.width}
         onChange={textDrawing.updateDraftText}
         onCommit={textDrawing.commitDraftText}
         onCancel={textDrawing.cancelDraftText}
       />
+      <ToolPalette activeTool={activeTool} onSelectTool={onSelectTool} />
       <ZoomControls
         zoom={viewport.zoom}
         onZoomIn={() => zoomAtPoint(stageCenter, -zoomButtonDelta)}
@@ -205,4 +248,4 @@ export function DrawingCanvas({
       />
     </div>
   )
-}
+})
