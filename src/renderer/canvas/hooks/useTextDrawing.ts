@@ -15,15 +15,19 @@ export const useTextDrawing = (dispatch: DispatchDrawingAction) => {
   const [draftText, setDraftText] = useState<DraftText | null>(null)
   const draftTextRef = useRef<DraftText | null>(null)
 
-  const handlePointerDown = (point: Point) => {
+  const startDraftText = (point: Point, text = '') => {
     const nextDraft = {
       x: point.x,
       y: point.y,
-      text: '',
+      text,
     }
 
     draftTextRef.current = nextDraft
     setDraftText(nextDraft)
+  }
+
+  const handlePointerDown = (point: Point) => {
+    startDraftText(point)
   }
 
   const updateDraftText = (text: string) => {
@@ -40,19 +44,19 @@ export const useTextDrawing = (dispatch: DispatchDrawingAction) => {
     })
   }
 
-  const commitDraftText = () => {
+  const takeDraftTextAction = (): DrawingAction | null => {
     const draft = draftTextRef.current
 
     if (!draft) {
-      return
+      return null
     }
 
     if (draft.text.trim() === '') {
       cancelDraftText()
-      return
+      return null
     }
 
-    dispatch({
+    const action: DrawingAction = {
       type: 'add-shape',
       shape: {
         id: createShapeId(),
@@ -61,9 +65,22 @@ export const useTextDrawing = (dispatch: DispatchDrawingAction) => {
         y: draft.y,
         text: draft.text,
       },
-    })
+    }
+
     draftTextRef.current = null
     setDraftText(null)
+
+    return action
+  }
+
+  const commitDraftText = () => {
+    const action = takeDraftTextAction()
+
+    if (!action) {
+      return
+    }
+
+    dispatch(action)
   }
 
   const cancelDraftText = () => {
@@ -73,8 +90,10 @@ export const useTextDrawing = (dispatch: DispatchDrawingAction) => {
 
   return {
     draftText,
+    startDraftText,
     updateDraftText,
     commitDraftText,
+    takeDraftTextAction,
     cancelDraftText,
     interaction: {
       onPointerDown: handlePointerDown,

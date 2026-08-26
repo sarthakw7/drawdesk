@@ -171,6 +171,10 @@ export const useCanvasInteraction = (
     }
 
     activeGestureTool.current = activeTool
+    if (activeTool === 'text') {
+      event.evt.preventDefault()
+    }
+
     if (activeTool === 'pan') {
       capturePanPointer(event)
       addPanFallbackListeners()

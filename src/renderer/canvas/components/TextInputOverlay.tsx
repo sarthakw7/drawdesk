@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import type { DraftText } from '../hooks/useTextDrawing'
 import type { Viewport } from '../viewport/coordinates'
 import { worldToScreen } from '../viewport/coordinates'
@@ -6,6 +6,7 @@ import { worldToScreen } from '../viewport/coordinates'
 type TextInputOverlayProps = {
   draftText: DraftText | null
   viewport: Viewport
+  canvasWidth: number
   onChange: (text: string) => void
   onCommit: () => void
   onCancel: () => void
@@ -14,14 +15,17 @@ type TextInputOverlayProps = {
 export function TextInputOverlay({
   draftText,
   viewport,
+  canvasWidth,
   onChange,
   onCommit,
   onCancel,
 }: TextInputOverlayProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  useEffect(() => {
-    inputRef.current?.focus()
+  useLayoutEffect(() => {
+    inputRef.current?.focus({
+      preventScroll: true,
+    })
   }, [draftText])
 
   useEffect(() => {
@@ -49,10 +53,12 @@ export function TextInputOverlay({
   }
 
   const screenPosition = worldToScreen(draftText, viewport)
+  const availableWidth = Math.max(0, canvasWidth - screenPosition.x)
 
   return (
     <input
       ref={inputRef}
+      data-drawdesk-text-input="true"
       value={draftText.text}
       onChange={(event) => onChange(event.target.value)}
       onKeyDown={(event) => {
@@ -71,10 +77,15 @@ export function TextInputOverlay({
         left: screenPosition.x,
         top: screenPosition.y,
         boxSizing: 'border-box',
-        minWidth: 120,
-        padding: '2px 4px',
-        border: '1px solid #2563eb',
+        width: 120,
+        maxWidth: availableWidth,
+        padding: '0 1px 1px',
+        border: 0,
+        borderBottom: '1px solid rgb(31 41 55 / 0.35)',
+        background: 'transparent',
+        color: '#1f2937',
         font: '16px sans-serif',
+        lineHeight: 1,
         outline: 'none',
       }}
     />
