@@ -6,6 +6,8 @@ The implementation is intentionally incremental: the domain document model stays
 
 ## Setup
 
+Use Node 24 for local development and CI parity.
+
 Install dependencies:
 
 ```sh
@@ -39,6 +41,14 @@ npm test
 npm run typecheck
 ```
 
+Build a local macOS package:
+
+```sh
+npm run package:mac
+```
+
+This builds the renderer first, then packages the app with Electron Builder. The current packaging target is macOS arm64 and outputs to `release/`, including `release/mac-arm64/Drawdesk.app` and `release/Drawdesk-1.0.0-arm64.dmg`. Local packages are unsigned and not notarized.
+
 ## Tech Stack
 
 - Electron for the desktop shell, native dialogs, and filesystem boundary.
@@ -54,8 +64,9 @@ npm run typecheck
 - `src/domain`: serializable drawing models and document validation.
 - `src/state`: framework-independent drawing reducer.
 - `src/renderer/App.tsx`: application shell, document reducer wiring, active tool state, and persistence UI behavior.
-- `src/renderer/components/Toolbar.tsx`: presentation-focused controls for New/Open/Save and tools.
+- `src/renderer/components/Toolbar.tsx`: presentation-focused app/file controls for New/Open/Save and save status.
 - `src/renderer/canvas`: Konva canvas composition, tool interactions, shape layers, geometry helpers, viewport state, and zoom controls.
+- `src/renderer/canvas/components/ToolPalette.tsx`: floating drawing tool controls for select, pan, rectangle, ellipse, line, and text.
 - `scripts/dev.mjs`: starts Vite, waits for the renderer URL, then launches Electron.
 
 ## State Model
@@ -109,7 +120,7 @@ Main process owns native dialogs and filesystem reads/writes. The renderer owns 
 `.drawdesk` files are JSON containing the versioned `DrawingDocument`. New creates a fresh empty document in renderer state and asks main to clear the current file association. Save writes the current document:
 
 - First Save for a new drawing shows the save dialog and remembers the chosen path in main.
-- Later Saves write directly to the remembered path.
+- Later Saves in the same app session write directly to the remembered path.
 - Cancelled Save leaves state unchanged.
 
 Open uses a two-step association flow:

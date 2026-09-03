@@ -56,7 +56,7 @@ export function Toolbar({
           fontWeight: 700,
         }}
       >
-        DrawDesk
+        Drawdesk
       </strong>
       <span
         style={{
